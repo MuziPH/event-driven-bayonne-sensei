@@ -3,19 +3,21 @@ package io.glitchtech.customer.service;
 import io.glitchtech.customer.domain.Customer;
 import io.glitchtech.customer.domain.EmailAddress;
 import io.glitchtech.customer.repository.CustomerRepository;
+import lombok.RequiredArgsConstructor;
+import org.springframework.cloud.stream.function.StreamBridge;
 import org.springframework.stereotype.Service;
 
 @Service
+@RequiredArgsConstructor
 public class CustomerServiceImpl implements CustomerService {
     private final CustomerRepository customerRepository;
-
-    public CustomerServiceImpl(CustomerRepository customerRepository) {
-        this.customerRepository = customerRepository;
-    }
+    private final StreamBridge streamBridge;
 
     @Override
     public Customer create(Customer customer) {
-        return customerRepository.save(customer);
+        Customer customerCreated = customerRepository.save(customer);
+        streamBridge.send("customer", customerCreated);
+        return customerCreated;
     }
 
     @Override
