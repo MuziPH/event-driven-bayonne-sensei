@@ -1,30 +1,25 @@
 package io.glitchtech.customer.messaging;
 
-import io.glitchtech.customer.domain.*;
-import io.glitchtech.customer.service.CustomerServiceImpl;
+import io.glitchtech.customer.messaging.event.CustomerEvent;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
-import org.springframework.stereotype.Component;
+import org.springframework.context.annotation.Configuration;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Sinks;
 
-import java.time.LocalDate;
-import java.time.Month;
 import java.util.function.Supplier;
 
 @RequiredArgsConstructor
-@Component
+@Configuration
 public class CustomerMessaging {
-    private final CustomerServiceImpl customerService;
 
     @Bean
-    public Supplier<Customer> customerSupplier() {
-        return () -> {
-                    Customer customerCreated = Customer.create(
-                            FirstName.of("Sivabak"),
-                            LastName.of("Gorrila"),
-                            BirthDate.of(LocalDate.of(1978, Month.NOVEMBER, 17)),
-                            EmailAddress.of("silbak@gmail.com")
-            );
-            return customerCreated;
-        };
+    public Sinks.Many<CustomerEvent> customerProducer() {
+        return Sinks.many().replay().latest();
+    }
+
+    @Bean
+    public Supplier<Flux<CustomerEvent>> customerSupplier() {
+        return () -> customerProducer().asFlux();
     }
 }

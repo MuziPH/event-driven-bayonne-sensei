@@ -3,10 +3,19 @@ server:
 spring:
   application:
     name: customer
+
   datasource:
     url: jdbc:mysql://localhost:3306/customer
     username: root
     password: ${MYSQL_PASSWORD}
+
+  cloud:
+    function:
+      definition: customerSupplier
+    stream:
+      bindings:
+        customerSupplier-out-0:
+          destination: customer-topic
 
   jpa:
     hibernate:
